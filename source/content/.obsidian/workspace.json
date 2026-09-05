@@ -27,12 +27,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "category-folder/工具/DevOps.md",
+                "file": "category-folder/工具/Jinkins.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "DevOps"
+              "title": "Jinkins"
             }
           }
         ],
@@ -114,7 +114,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "category-folder/工具/DevOps.md",
+                "file": "category-folder/工具/Jinkins.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -133,7 +133,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "category-folder/工具/DevOps.md",
+                "file": "category-folder/工具/Jinkins.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               },
@@ -162,7 +162,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "category-folder/工具/DevOps.md",
+                "file": "category-folder/工具/Jinkins.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
@@ -192,8 +192,10 @@
   },
   "active": "2d8837e6263008e3",
   "lastOpenFiles": [
-    "category-folder/Some note.md",
     "category-folder/工具/DevOps.md",
+    "category-folder/工具/Jinkins.md",
+    "jenkins win server.png",
+    "category-folder/Some note.md",
     "category-folder/工具",
     "未命名",
     "category-folder/index.md",
