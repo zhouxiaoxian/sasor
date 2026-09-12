@@ -119,3 +119,119 @@ Jenkins 将作为 **Windows 服务**安装。你可以通过浏览来验证这�
 完成上述步骤后，尝试用新增用户再次登录。
 
 
+### 安装SASUnit Jenkins插件
+
+访问Jenkins**插件管理器，>可使用**。搜索_SASUNIT_，选择并安装，无需重启。安装成功后，你应该会看到：
+
+![1600-SAS9-Test-Automation-Jenkins-plugin-SASUnit-1024x274.png](https://communities.sas.com/t5/image/serverpage/image-id/49276i7385534341F6C86C/image-dimensions/798x213?v=v2 "1600-SAS9-Test-Automation-Jenkins-plugin-SASUnit-1024x274.png")
+
+### 配置SASUnit Jenkins插件
+
+你可以查看 [Jenkins SASUnit 插件文档](https://plugins.jenkins.io/sasunit-plugin/)。不过，请允许我引导你，帮你节省盲目寻找的时间。
+
+去管理**Jenkins的全局工具配置>**。在SASUnit中，查找**SASUnit >SASUnit安装**。
+
+![1610-SAS9-Test-Automation-Jenkins-Global-tool-configuration-SASUnit.png](https://communities.sas.com/t5/image/serverpage/image-id/49277iAC9C065B8C0DAB25/image-dimensions/410x427?v=v2 "1610-SAS9-Test-Automation-Jenkins-Global-tool-configuration-SASUnit.png")
+
+添加SASUnit：
+
+- 名字是_：SASUnit 2.0.2，_和版本一样。
+- 将 Home Directory 指向 **/**（这是你在上一篇[帖子](https://communities.sas.com/t5/SAS-Communities-Library/Automate-SAS-9-Code-Unit-Tests-in-a-DevOps-Pipeline-with-Jenkins/ta-p/681941)中定义的SASUNIT_ROOT变量）。
+
+![1620-SAS9-Test-Automation-Jenkins-Global-tool-configuration-SASUnit-advanced.png](https://communities.sas.com/t5/image/serverpage/image-id/49278i85FEA7361D6BA8AD/image-dimensions/438x410?v=v2 "1620-SAS9-Test-Automation-Jenkins-Global-tool-configuration-SASUnit-advanced.png")
+
+顺便说一句，你可以配置自动安装SASUnit，我觉得这是个很棒的功能！通过自动安装程序，你可以编写安装步骤脚本，这样如果你更改代理，SASUnit 会在运行前自动安装。
+
+### 在Jenkins代理上配置SASUnit的位置
+
+我们需要告诉Jenkins，SASUnit安装在代理上的位置，也就是SAS 9机器。去Jenkins Nodes看看。找到你的SAS 9特工。检查工具位置（见底部）。
+
+![1630-SAS9-Test-Automation-Jenkins-agent-tool-locations.png](https://communities.sas.com/t5/image/serverpage/image-id/49279i066A3D2FD4CAF6B1/image-dimensions/689x702?v=v2 "1630-SAS9-Test-Automation-Jenkins-agent-tool-locations.png")
+
+![1640-SAS9-Test-Automation-Jenkins-agent-tool-locations2.png](https://communities.sas.com/t5/image/serverpage/image-id/49280iE9462EEE09F0FC26/image-dimensions/633x289?v=v2 "1640-SAS9-Test-Automation-Jenkins-agent-tool-locations2.png")
+
+选择SASUnit，指向SAS 9 Windows机器上的SASUNIT_ROOT路径：_C：\sasunit_。这正是你之前帖子中在_配置SASUnit批处理文件_时需要更改的位置。[](https://communities.sas.com/t5/SAS-Communities-Library/Automate-SAS-9-Code-Unit-Tests-in-a-DevOps-Pipeline-with-Jenkins/ta-p/681410)
+
+## Jenkins 单元测试流程
+
+### 定义管道
+
+创建一个新的流水线。限制运行到定义的SAS 9代理，其中安装了SASUnit。
+
+![1650-SAS9-Test-Automation-Jenkins-pipeline1.png](https://communities.sas.com/t5/image/serverpage/image-id/49281i134D2F39397768A3/image-dimensions/523x658?v=v2 "1650-SAS9-Test-Automation-Jenkins-pipeline1.png")
+
+点击代理标签下的“高级”。Jenkins需要一个工作区来运行这些工件。
+
+填写 SASUnit 批处理命令的位置，位于 \bin 文件夹中，C_：\sasunit\example\bin_ 。因为我们想要来自_C：\sasunit\example\_文件夹的伪影_，所以_把位置指向C_：\sasunit\example_，向上一级。
+
+![1660-SAS9-Test-Automation-Jenkins-pipeline2-1024x427.png](https://communities.sas.com/t5/image/serverpage/image-id/49282i32E1DC6631D80F9E/image-dimensions/779x325?v=v2 "1660-SAS9-Test-Automation-Jenkins-pipeline2-1024x427.png")
+
+### 在管道中执行SASUnit
+
+添加一个第一步，导航到SASUNIT_ROOT文件夹C_：\sasunit_。
+
+添加第二步“执行SASUnit测试套件”，通过批处理文件执行SASUnit。
+
+这个步骤可以在Jenkins找到，因为你[安装了SASUnit插件](https://communities.sas.com/t5/SAS-Communities-Library/Automate-SAS-9-Code-Unit-Tests-in-a-DevOps-Pipeline-with-Jenkins/ta-p/681410)。该可执行文件对应于 _C：\sasunit\example\__bin\sasunit9.4.windows.en.ci.cmd_。
+
+![1670-SAS9-Test-Automation-Jenkins-pipeline-step1.png](https://communities.sas.com/t5/image/serverpage/image-id/49283iEC1A45AE9D3AAA4B/image-dimensions/470x351?v=v2 "1670-SAS9-Test-Automation-Jenkins-pipeline-step1.png")
+
+选择_sasunit9.4.windows.en.ci.cmd，ci_代表“连续积分”，适用于Jenkins。
+
+_sasunit9.4.windows.en.ci.cmd_和_sasunit.9.4.windows.en.overwrite.ci.cmd_的区别是什么？_En.ci.cmd_只会查看测试单元文件夹中的更改，而_overwrite.en.ci.cmd_会从头重新做所有测试。
+
+### 添加一个构建后操作来归档这些神器
+
+执行时会生成_.log_或_junit.xml_文件等伪影。
+
+JUnit 是最初被许多 Java 应用程序用作单元测试框架的单元框架之一。默认情况下，JUnit 测试会生成简单的报告 XML 文件用于测试执行。这些XML文件随后可用于根据测试需求生成任何自定义报告。
+
+![1670-SAS9-Test-Automation-Jenkins-pipeline-step2.png](https://communities.sas.com/t5/image/serverpage/image-id/49284i56E3D2C832058B04/image-dimensions/639x411?v=v2 "1670-SAS9-Test-Automation-Jenkins-pipeline-step2.png")
+
+文件路径相对于管道定义中定义的自定义工作区 _C：\sasunit\example_。
+
+这些工件在构建时存储在 Jenkins 管道工作区中。
+
+![1680-SAS9-Test-Automation-Jenkins-workspace.png](https://communities.sas.com/t5/image/serverpage/image-id/49285iA36A60285CA5D7D8/image-dimensions/729x344?v=v2 "1680-SAS9-Test-Automation-Jenkins-workspace.png")
+
+### 如何在Jenkins中显示构建和测试结果
+
+通过使用 Jenkins 的构建后步骤“发布 JUnit 测试结果报告”，你可以显示你的 SASUnit 构建结果。剩下的就是告诉詹金斯该去哪里找这个档案。**/*junit.xml 会搜索自定义工作区文件夹 _C：\sasunit\example_ 的所有文件夹，寻找名为 _junit.xml_ 的文件：
+
+![1670-SAS9-Test-Automation-Jenkins-pipeline-step3.png](https://communities.sas.com/t5/image/serverpage/image-id/49286i33E31505CB19DEE9/image-dimensions/720x443?v=v2 "1670-SAS9-Test-Automation-Jenkins-pipeline-step3.png")
+
+健康报告放大因子定义了稳定或不稳定构建的阈值。
+
+### SASUnit 生成 junit.xml 文件
+
+文件包含通过测试（断言）的数量，你可以了解测试结果的概览。
+
+构建状态将由创建的 JUnit-XML 自动确定。如果没有失败断言，构建是稳定的。如果断言失败，构建就是不稳定的。
+
+如果您在 **reportSASUnit** 的宏调用中指定 _o_junit=1，SASUnit_ 将生成 JUnit-XML 文件：
+
+```sas
+%reportsasunit(
+i_language =%upcase(%sysget(SASUNIT_LANGUAGE))
+,o_html     =1
+,o_junit    =1
+);
+```
+
+JUnit.xml文件和HTML文档都创建在_C：\sasunit\example\docsasunit\en\rep_文件夹中。
+
+### 如何在 Jenkins 中显示 SASUnit HTML 报表
+
+在Jenkins中显示SASUnit文档非常简单。你可以使用发布后的构建步骤“发布HTML报告”：
+
+![1670-SAS9-Test-Automation-Jenkins-pipeline-step4.png](https://communities.sas.com/t5/image/serverpage/image-id/49287i89877E566FFC0596/image-dimensions/608x293?v=v2 "1670-SAS9-Test-Automation-Jenkins-pipeline-step4.png")
+
+## 测试结果
+
+最后，当我们运行流水线时，会得到结果，这些结果见上一篇文章《[可视化测试结果](https://communities.sas.com/t5/SAS-Communities-Library/Automate-SAS-9-Code-Unit-Tests-in-a-DevOps-Pipeline-with-Jenkins/ta-p/681410)》。
+
+![1430-SAS9-测试-自动化-Jenkins-pipeline-Tests （1）.png](https://communities.sas.com/t5/image/serverpage/image-id/49288i1FF13D469F6E8CE5/image-dimensions/548x602?v=v2 "1430-SAS9-Test-Automation-Jenkins-pipeline-Tests (1).png")
+
+## 结论
+
+我们研究了如何在Jenkins中设置测试自动化，以及调用SASUnit测试框架和显示测试结果所需的配置。
